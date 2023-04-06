@@ -19,14 +19,12 @@ public class NetworkClientRepository : IAsyncDisposable
         _clients[guid] = client;
     }
 
-    public async Task<bool> TryRemoveAsync(Guid guid, string reason)
+    public async Task<bool> TryRemoveAsync(Guid guid)
     {
         try
         {
             var result = _clients.TryRemove(guid, out var client);
-
-            client?.Dispose(reason);
-
+            client?.Dispose();
             return result;
         }
         catch (Exception e)
@@ -49,7 +47,7 @@ public class NetworkClientRepository : IAsyncDisposable
         
         foreach (var client in idleClients)
         {
-            if (!await TryRemoveAsync(client.Guid, NetworkClientExitReason.MissedPing))
+            if (!await TryRemoveAsync(client.Guid))
             {
                 _logger.LogError("Failed to dispose of network client");
             }
@@ -62,7 +60,7 @@ public class NetworkClientRepository : IAsyncDisposable
     {
         foreach (var client in _clients.Keys)
         {
-            if (!await TryRemoveAsync(client, NetworkClientExitReason.ServerShutdown))
+            if (!await TryRemoveAsync(client))
             {
                 _logger.LogError("Failed to dispose of network client");
             }

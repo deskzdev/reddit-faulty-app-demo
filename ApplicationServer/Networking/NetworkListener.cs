@@ -30,8 +30,8 @@ public class NetworkListener
 
     public async Task ListenAsync()
     {
-        _logger.LogInformation($"We are listening for connections");
-            
+        _logger.LogInformation("Listening for connections!");
+        
         while (true)
         {
             var client = await _listener.AcceptTcpClientAsync();

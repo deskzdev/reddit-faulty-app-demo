@@ -1,8 +1,4 @@
-using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace ApplicationServer.Networking.Client;
 
@@ -14,7 +10,6 @@ public class NetworkClient
     private readonly byte[] _buffer;
 
     public NetworkClient(
-        ILogger<NetworkClient> logger,
         Guid guid, 
         TcpClient tcpClient,
         NetworkClientRepository clientRepository)
@@ -51,11 +46,12 @@ public class NetworkClient
     {
         if (exception.GetBaseException().GetType() == typeof(SocketException) && ((SocketException)exception).ErrorCode == 10054)
         {
-            Dispose("CLIENT_EXITED");
+            Dispose();
             return;
         }
         
-        Dispose(exception.Message);
+        Console.WriteLine(exception);
+        Dispose();
     }
 
     public Task ListenAsync()
@@ -75,32 +71,15 @@ public class NetworkClient
     
     private async Task OnReceivedAsync(int bytesReceived)
     {
-        var data = new byte[bytesReceived];
-        Buffer.BlockCopy(_buffer, 0, data, 0, bytesReceived);
-
-        var jsonString = Encoding.Default.GetString(data);
-    }
-
-    private async Task WriteAsync(byte[] data)
-    {
-        if (_disposed)
-        {
-            return;
-        }
-        
-        await _tcpClient.GetStream().WriteAsync(data);
+        // Removed implementation for simplicity
     }
 
     public DateTime LastPing { get; set; }
-    [JsonIgnore]
     public Guid Guid => _guid;
     
-    [JsonIgnore]
-    public IPAddress IpAddress => IPAddress.Parse(_tcpClient.Client.RemoteEndPoint.ToString().Split(":")[0]);
-
     private bool _disposed;
     
-    public async void Dispose(string reason)
+    public async void Dispose()
     {
         if (_disposed)
         {
@@ -109,7 +88,7 @@ public class NetworkClient
 
         _disposed = true;
 
-        await _clientRepository.TryRemoveAsync(_guid, reason);
+        await _clientRepository.TryRemoveAsync(_guid);
 
         if (!_tcpClient.Connected)
         {
