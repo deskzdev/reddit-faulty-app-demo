@@ -6,17 +6,14 @@ public class NetworkClient
 {
     private readonly Guid _guid;
     private readonly TcpClient _tcpClient;
-    private readonly NetworkClientRepository _clientRepository;
     private readonly byte[] _buffer;
 
     public NetworkClient(
         Guid guid, 
-        TcpClient tcpClient,
-        NetworkClientRepository clientRepository)
+        TcpClient tcpClient)
     {
         _guid = guid;
         _tcpClient = tcpClient;
-        _clientRepository = clientRepository;
         _buffer = new byte[4096];
     }
 
@@ -87,8 +84,6 @@ public class NetworkClient
         }
 
         _disposed = true;
-
-        await _clientRepository.TryRemoveAsync(_guid);
 
         if (!_tcpClient.Connected)
         {

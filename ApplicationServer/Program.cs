@@ -22,7 +22,6 @@ internal static class Program
             {
                 serviceCollection.AddSingleton(new TcpListener(IPAddress.Parse("0.0.0.0"), 1234));
                 serviceCollection.AddTransient<NetworkClient>();
-                serviceCollection.AddSingleton<NetworkClientRepository>();
                 serviceCollection.AddSingleton<NetworkListener>();
             }).Build();
         

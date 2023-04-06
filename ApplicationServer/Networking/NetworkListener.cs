@@ -8,16 +8,13 @@ public class NetworkListener
 {
     private readonly ILogger<NetworkListener> _logger;
     private readonly TcpListener _listener;
-    private readonly NetworkClientRepository _clientRepository;
 
     public NetworkListener(
         ILogger<NetworkListener> logger, 
-        TcpListener listener, 
-        NetworkClientRepository clientRepository)
+        TcpListener listener)
     {
         _logger = logger;
         _listener = listener;
-        _clientRepository = clientRepository;
     }
 
     public void Start(int backlog = 100)
@@ -39,10 +36,8 @@ public class NetworkListener
     private async Task AcceptClient(TcpClient client)
     {
         var clientId = Guid.NewGuid();
-        var networkClient = new NetworkClient(clientId, client, _clientRepository);
+        var networkClient = new NetworkClient(clientId, client);
         
-        _clientRepository.AddClient(clientId, networkClient);
-
         _logger.LogWarning("Someone is trying to connect...");
         
         await networkClient.ListenAsync();
