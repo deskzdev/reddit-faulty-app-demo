@@ -36,7 +36,7 @@ public class ServerTaskWorker
                 ProcessTaskAsync(task);
             }
 
-            Thread.Sleep(200);
+            await Task.Delay(200);
         }
     }
 
