@@ -9,18 +9,15 @@ public class NetworkListener
     private readonly ILogger<NetworkListener> _logger;
     private readonly TcpListener _listener;
     private readonly NetworkClientRepository _clientRepository;
-    private readonly NetworkClientFactory _clientFactory;
 
     public NetworkListener(
         ILogger<NetworkListener> logger, 
         TcpListener listener, 
-        NetworkClientRepository clientRepository, 
-        NetworkClientFactory clientFactory)
+        NetworkClientRepository clientRepository)
     {
         _logger = logger;
         _listener = listener;
         _clientRepository = clientRepository;
-        _clientFactory = clientFactory;
     }
 
     public void Start(int backlog = 100)
@@ -42,7 +39,7 @@ public class NetworkListener
     private async Task AcceptClient(TcpClient client)
     {
         var clientId = Guid.NewGuid();
-        var networkClient = _clientFactory.CreateClient(clientId, client);
+        var networkClient = new NetworkClient(clientId, client, _clientRepository);
         
         _clientRepository.AddClient(clientId, networkClient);
 
