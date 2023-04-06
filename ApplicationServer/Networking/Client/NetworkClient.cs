@@ -38,7 +38,7 @@ public class NetworkClient
                     await onReceivedAsync(bytes);
                 }
 
-                Thread.Sleep(10);
+                await Task.Delay(10);
             }
         }
         catch (Exception e)
