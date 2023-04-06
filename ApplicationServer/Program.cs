@@ -1,5 +1,4 @@
 ﻿using ApplicationServer.Networking;
-using ApplicationServer.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -26,8 +25,6 @@ internal static class Program
         
         var services = app.Services;
         
-        services.GetRequiredService<ServerTaskWorker>().Start();
-
         var networkServer = services.GetRequiredService<NetworkListener>();
         networkServer.Start();
         
