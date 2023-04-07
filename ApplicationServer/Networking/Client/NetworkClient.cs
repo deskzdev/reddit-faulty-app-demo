@@ -7,6 +7,7 @@ public class NetworkClient
     private readonly Guid _guid;
     private readonly TcpClient _tcpClient;
     private readonly byte[] _buffer;
+    private Task _processingLoop;
 
     public NetworkClient(
         Guid guid, 
@@ -15,9 +16,10 @@ public class NetworkClient
         _guid = guid;
         _tcpClient = tcpClient;
         _buffer = new byte[4096];
+
     }
 
-    private async void StartListening(Action<Exception> onException, Func<int, Task> onReceivedAsync, byte[] buffer)
+    private async Task StartListening(Func<Exception, Task> onExceptionAsync, Func<int, Task> onReceivedAsync, byte[] buffer)
     {
         try
         {
@@ -35,34 +37,25 @@ public class NetworkClient
         }
         catch (Exception e)
         {
-            onException(e);
+            await onExceptionAsync(e);
         }
     }
 
-    private void OnException(Exception exception)
+    private async Task OnExceptionAsync(Exception exception)
     {
         if (exception.GetBaseException().GetType() == typeof(SocketException) && ((SocketException)exception).ErrorCode == 10054)
         {
-            Dispose();
+            await DisposeAsync();
             return;
         }
         
         Console.WriteLine(exception);
-        Dispose();
+        await DisposeAsync();
     }
 
     public Task ListenAsync()
     {
-        var onException = new Action<Exception>(OnException);
-        var onReceived = new Func<int, Task>(OnReceivedAsync);
-        
-        var listeningThread = new Thread(() => StartListening(onException, onReceived, _buffer))
-        {
-            Name = "Client Listening Thread",
-            Priority = ThreadPriority.AboveNormal
-        };
-        
-        listeningThread.Start();
+        _processingLoop = Task.Run(() => StartListening(OnExceptionAsync, OnReceivedAsync, _buffer));
         return Task.CompletedTask;
     }
     
@@ -76,7 +69,7 @@ public class NetworkClient
     
     private bool _disposed;
     
-    public async void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
         {
@@ -90,7 +83,7 @@ public class NetworkClient
             return;
         }
         
-        _tcpClient.GetStream().Close();
+        await _tcpClient.GetStream().DisposeAsync();
         _tcpClient.Close();
     }
 }
